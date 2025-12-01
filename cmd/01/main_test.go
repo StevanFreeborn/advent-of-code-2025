@@ -7,11 +7,21 @@ import (
 )
 
 func TestSolvePartOneWithExampleInput(t *testing.T) {
-	expected := -1
+	expected := 3
 
 	result := solution.SolvePartOne("EXAMPLE.txt")
 
 	if result != expected {
-		t.Errorf("SolvePartOne() = %d; want %d", result, expected)
+		t.Errorf(`SolvePartOne("EXAMPLE.txt") = %d; want %d`, result, expected)
+	}
+}
+
+func TestSolvePartOneWithInput(t *testing.T) {
+	expected := 1011
+
+	result := solution.SolvePartOne("INPUT.txt")
+
+	if result != expected {
+		t.Errorf(`SolvePartOne("INPUT.txt") = %d; want %d`, result, expected)
 	}
 }
