@@ -26,3 +26,19 @@ func SolvePartOne(filePath string) int {
 
 	return total
 }
+
+func SolvePartTwo(filePath string) int {
+	lines := file.ReadLines(filePath)
+	dial := dial.New()
+
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+
+		instruction := instruction.FromLine(line)
+		dial.Turn(instruction)
+	}
+
+	return dial.ZeroCount()
+}

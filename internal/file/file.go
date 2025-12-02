@@ -3,7 +3,6 @@ package file
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 )
 
@@ -20,7 +19,6 @@ func ReadLines(filePath string) []string {
 
 	for hasLine := scanner.Scan(); hasLine; hasLine = scanner.Scan() {
 		line := scanner.Text()
-		fmt.Println(line)
 		lines = append(lines, line)
 	}
 

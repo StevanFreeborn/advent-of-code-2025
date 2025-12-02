@@ -16,6 +16,25 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestProblem(t *testing.T) {
+	instructions := []instruction.Instruction{
+		instruction.FromLine("R48"),
+		instruction.FromLine("L5"),
+	}
+
+	dial := dial.From(52)
+
+	for _, i := range instructions {
+		dial.Turn(i)
+	}
+
+	result := dial.ZeroCount()
+
+	if result != 1 {
+		t.Errorf("ya done fucked up. you wanted %d but got %d", 1, result)
+	}
+}
+
 type TurnTestCase struct {
 	Instruction       instruction.Instruction
 	ExpectedDialValue int
