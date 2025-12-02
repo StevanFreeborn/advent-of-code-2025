@@ -60,7 +60,7 @@ func (d *dial) Turn(instruction instruction.Instruction) {
 		for range instruction.Distance() {
 			d.increaseOneClick()
 
-			if d.value >= 100 {
+			if d.value > 99 {
 				d.value -= 100
 			}
 
