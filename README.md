@@ -20,17 +20,17 @@ Each day's solution is contained in a separate package.
 
 ## Challenges
 
-| Day | Problem                                         | Solution              | Notes                                  |
-|-----|-------------------------------------------------|-----------------------|----------------------------------------|
-| 01  | [Problem](https://adventofcode.com/2025/day/1)  | [Solution](./cmd/01/) | Part 1 seemed straight forward enough. |
-| 02  | [Problem](https://adventofcode.com/2025/day/2)  | [Solution](./cmd/02/) |                                        |
-| 03  | [Problem](https://adventofcode.com/2025/day/3)  | [Solution](./cmd/03/) |                                        |
-| 04  | [Problem](https://adventofcode.com/2025/day/4)  | [Solution](./cmd/04/) |                                        |
-| 05  | [Problem](https://adventofcode.com/2025/day/5)  | [Solution](./cmd/05/) |                                        |
-| 06  | [Problem](https://adventofcode.com/2025/day/6)  | [Solution](./cmd/06/) |                                        |
-| 07  | [Problem](https://adventofcode.com/2025/day/7)  | [Solution](./cmd/07/) |                                        |
-| 08  | [Problem](https://adventofcode.com/2025/day/8)  | [Solution](./cmd/08/) |                                        |
-| 09  | [Problem](https://adventofcode.com/2025/day/9)  | [Solution](./cmd/09/) |                                        |
-| 10  | [Problem](https://adventofcode.com/2025/day/10) | [Solution](./cmd/10/) |                                        |
-| 11  | [Problem](https://adventofcode.com/2025/day/11) | [Solution](./cmd/11/) |                                        |
-| 12  | [Problem](https://adventofcode.com/2025/day/12) | [Solution](./cmd/12/) |                                        |
+| Day | Problem                                         | Solution              | Notes                                                                                                                                                             |
+|-----|-------------------------------------------------|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 01  | [Problem](https://adventofcode.com/2025/day/1)  | [Solution](./cmd/01/) | Part 1 seemed straight forward enough. Part 2 completely stumped me. The trickiest part was not counting zero's twice when you ended and then started from there. |
+| 02  | [Problem](https://adventofcode.com/2025/day/2)  | [Solution](./cmd/02/) |                                                                                                                                                                   |
+| 03  | [Problem](https://adventofcode.com/2025/day/3)  | [Solution](./cmd/03/) |                                                                                                                                                                   |
+| 04  | [Problem](https://adventofcode.com/2025/day/4)  | [Solution](./cmd/04/) |                                                                                                                                                                   |
+| 05  | [Problem](https://adventofcode.com/2025/day/5)  | [Solution](./cmd/05/) |                                                                                                                                                                   |
+| 06  | [Problem](https://adventofcode.com/2025/day/6)  | [Solution](./cmd/06/) |                                                                                                                                                                   |
+| 07  | [Problem](https://adventofcode.com/2025/day/7)  | [Solution](./cmd/07/) |                                                                                                                                                                   |
+| 08  | [Problem](https://adventofcode.com/2025/day/8)  | [Solution](./cmd/08/) |                                                                                                                                                                   |
+| 09  | [Problem](https://adventofcode.com/2025/day/9)  | [Solution](./cmd/09/) |                                                                                                                                                                   |
+| 10  | [Problem](https://adventofcode.com/2025/day/10) | [Solution](./cmd/10/) |                                                                                                                                                                   |
+| 11  | [Problem](https://adventofcode.com/2025/day/11) | [Solution](./cmd/11/) |                                                                                                                                                                   |
+| 12  | [Problem](https://adventofcode.com/2025/day/12) | [Solution](./cmd/12/) |                                                                                                                                                                   |
