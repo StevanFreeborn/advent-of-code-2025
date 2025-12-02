@@ -2,8 +2,6 @@
 package dial
 
 import (
-	"fmt"
-
 	"github.com/StevanFreeborn/advent-of-code-2025/cmd/01/direction"
 	"github.com/StevanFreeborn/advent-of-code-2025/cmd/01/instruction"
 )
@@ -42,55 +40,43 @@ func (d *dial) Value() int {
 }
 
 func (d *dial) Turn(instruction instruction.Instruction) {
-	logPrefix := fmt.Sprintf("[TURN %s %d]", instruction.Direction(), instruction.Distance())
-
-	if d.value < 0 || d.value > 99 {
-		panic("NEVER SHALL YOU PASS!!!")
-	}
-
-	// d.value is always 0 to 99
-
 	if instruction.Direction() == direction.Left {
-		if d.value == 0 {
-			d.zeroCount--
-		}
+		for range instruction.Distance() {
+			d.decreaseOneClick()
 
-		d.value -= instruction.Distance()
+			if d.value == 0 {
+				d.zeroCount++
+			}
 
-		// that here we are at 0
-
-		if d.value == 0 {
-			fmt.Printf("%s zeroCount++\n", logPrefix)
-			d.zeroCount++
-		}
-
-		for d.value < 0 {
-			// WE NEVER GET HERE
-			// UNLESS d.value is -1 or less
-			currentValue := d.value
-			d.zeroCount++
-			d.value += 100
-			fmt.Printf("%s zeroCount++ => Correcting %d to %d (%d)\n", logPrefix, currentValue, d.value, d.zeroCount)
+			if d.value < 0 {
+				d.value += 100
+			}
 		}
 
 		return
 	}
 
 	if instruction.Direction() == direction.Right {
-		d.value += instruction.Distance()
+		for range instruction.Distance() {
+			d.increaseOneClick()
 
-		// that here we at 100 or the equilavent
-		// of 0. this is counted
+			if d.value >= 100 {
+				d.value -= 100
+			}
 
-		for d.value > 99 {
-			// WE NEVER GET HERE
-			// UNLESS d.value is 100 or more
-			currentValue := d.value
-			d.zeroCount++
-			d.value -= 100
-			fmt.Printf("%s zeroCount++ => Correcting %d to %d (%d)\n", logPrefix, currentValue, d.value, d.zeroCount)
+			if d.value == 0 {
+				d.zeroCount++
+			}
 		}
 
 		return
 	}
+}
+
+func (d *dial) decreaseOneClick() {
+	d.value--
+}
+
+func (d *dial) increaseOneClick() {
+	d.value++
 }

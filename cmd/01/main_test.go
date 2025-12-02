@@ -38,7 +38,7 @@ func TestSolvePartTwoWithExampleInput(t *testing.T) {
 
 func TestSolvePartTwoWithInput(t *testing.T) {
 	expected := -1
-	tooLow := 5849
+	tooLow := 5922
 	tooHigh := 5967
 
 	result := solution.SolvePartTwo("INPUT.txt")
