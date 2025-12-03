@@ -24,3 +24,13 @@ func ReadLines(filePath string) []string {
 
 	return lines
 }
+
+func ReadAllText(filePath string) string {
+	fileContent, readErr := os.ReadFile(filePath)
+
+	if readErr != nil {
+		return ""
+	}
+
+	return string(fileContent)
+}

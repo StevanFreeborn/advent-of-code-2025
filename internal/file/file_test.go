@@ -19,3 +19,13 @@ func TestReadLines(t *testing.T) {
 		t.Errorf("got %s but expected %s", result, expectedLines)
 	}
 }
+
+func TestReadAllText(t *testing.T) {
+	expectedText := "hello\r\nworld\r\n"
+
+	result := file.ReadAllText("test.txt")
+
+	if result != expectedText {
+		t.Errorf("got %q but expected %q", result, expectedText)
+	}
+}

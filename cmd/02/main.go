@@ -1,9 +1,10 @@
 package main
 
 import (
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/file"
 )
 
 const SeparatorCharacter = ","
@@ -15,13 +16,8 @@ type Range struct {
 }
 
 func SolvePartOne(filePath string) int64 {
-	bytes, readErr := os.ReadFile(filePath)
-
-	if readErr != nil {
-		return 0
-	}
-
-	strRanges := strings.SplitSeq(string(bytes), SeparatorCharacter)
+	input := file.ReadAllText(filePath)
+	strRanges := strings.SplitSeq(input, SeparatorCharacter)
 
 	rngs := []Range{}
 
