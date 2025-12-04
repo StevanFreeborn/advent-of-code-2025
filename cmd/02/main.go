@@ -18,7 +18,24 @@ func SolvePartOne(filePath string) int64 {
 	for r := range strRanges {
 		rng := rnge.From(r)
 
-		for id := range rng.InvalidIds() {
+		for id := range rng.InvalidIdsWithEqualHalves() {
+			total += id
+		}
+	}
+
+	return total
+}
+
+func SolvePartTwo(filePath string) int64 {
+	input := file.ReadAllText(filePath)
+	strRanges := strings.SplitSeq(input, SeparatorCharacter)
+
+	total := int64(0)
+
+	for r := range strRanges {
+		rng := rnge.From(r)
+
+		for id := range rng.InvalidIdsWithTwoOrMoreSeq() {
 			total += id
 		}
 	}

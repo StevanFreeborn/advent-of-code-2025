@@ -25,3 +25,23 @@ func TestSolvePartOneWithInput(t *testing.T) {
 		t.Errorf("expected %d, got %d", expected, result)
 	}
 }
+
+func TestSolvePartTwoWithExampleInput(t *testing.T) {
+	expected := int64(4_174_379_265)
+
+	result := solution.SolvePartTwo("EXAMPLE.txt")
+
+	if result != expected {
+		t.Errorf("expected %d, got %d", expected, result)
+	}
+}
+
+func TestSolvePartTwoWithInput(t *testing.T) {
+	expected := int64(28858486244)
+
+	result := solution.SolvePartTwo("INPUT.txt")
+
+	if result != expected {
+		t.Errorf("expected %d, got %d", expected, result)
+	}
+}

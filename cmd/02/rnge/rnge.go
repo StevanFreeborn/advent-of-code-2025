@@ -10,7 +10,8 @@ import (
 const RangeSeparatorCharacter = "-"
 
 type Range interface {
-	InvalidIds() iter.Seq[int64]
+	InvalidIdsWithEqualHalves() iter.Seq[int64]
+	InvalidIdsWithTwoOrMoreSeq() iter.Seq[int64]
 	Start() int64
 	End() int64
 }
@@ -39,7 +40,7 @@ func (r rnge) End() int64 {
 	return r.end
 }
 
-func (r rnge) InvalidIds() iter.Seq[int64] {
+func (r rnge) InvalidIdsWithEqualHalves() iter.Seq[int64] {
 	return func(yield func(int64) bool) {
 		for id := r.start; id <= r.end; id++ {
 			idStr := strconv.FormatInt(id, 10)
@@ -54,6 +55,46 @@ func (r rnge) InvalidIds() iter.Seq[int64] {
 			secondHalf := idStr[midpoint:]
 
 			if firstHalf != secondHalf {
+				continue
+			}
+
+			ok := yield(id)
+
+			if !ok {
+				return
+			}
+		}
+	}
+}
+
+func (r rnge) InvalidIdsWithTwoOrMoreSeq() iter.Seq[int64] {
+	return func(yield func(int64) bool) {
+		for id := r.start; id <= r.end; id++ {
+			idStr := strconv.FormatInt(id, 10)
+			idLength := len(idStr)
+
+			isValid := true
+
+			for pLen := 1; pLen <= idLength/2; pLen++ {
+				v := idLength % pLen
+				repeatedPatterDoesNotFit := v != 0
+
+				if repeatedPatterDoesNotFit {
+					continue
+				}
+
+				pattern := idStr[:pLen]
+				numOfRepeats := idLength / pLen
+				repeatedPattern := strings.Repeat(pattern, numOfRepeats)
+
+				if repeatedPattern != idStr {
+					continue
+				}
+
+				isValid = false
+			}
+
+			if isValid {
 				continue
 			}
 
