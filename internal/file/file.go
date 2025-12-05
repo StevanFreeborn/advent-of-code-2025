@@ -6,6 +6,9 @@ import (
 	"os"
 )
 
+// TODO: Implement a StreamLines method
+// in the file package
+
 func ReadLines(filePath string) []string {
 	lines := []string{}
 
