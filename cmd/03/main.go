@@ -5,13 +5,13 @@ import (
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/file"
 )
 
-func SolvePartOne(filePath string) int {
+func Solve(filePath string, numOfCells int) int64 {
 	input := file.ReadLines(filePath)
-	total := 0
+	total := int64(0)
 
 	for _, line := range input {
 		bank := bank.From(line)
-		total += bank.Joltage()
+		total += bank.Joltage(numOfCells)
 	}
 
 	return total

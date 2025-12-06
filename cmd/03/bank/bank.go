@@ -2,12 +2,12 @@
 package bank
 
 import (
-	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Bank interface {
-	Joltage() int
+	Joltage(numOfCellsToTurnOn int) int64
 	Cells() []int
 }
 
@@ -28,73 +28,32 @@ func From(line string) Bank {
 	}
 }
 
-type cell struct {
-	index int
-	value int
-}
+func (b bank) Joltage(numOfCellsToTurnOn int) int64 {
+	bankLength := len(b.cells)
+	cellsOn := []int{}
+	removalBudget := bankLength - numOfCellsToTurnOn
 
-func (b bank) Joltage() int {
-	// TODO: We still need to
-	// find the max
-	// however we should then
-	// find the next max to the
-	// left of the highest
-	// and find the next max to
-	// the right of the higest
-	// we should then see what
-	// the large number we can make
-	// with these values
-
-	max := cell{
-		value: -1,
-	}
-
-	for ci, cv := range b.cells {
-		if cv > max.value {
-			max = cell{
-				index: ci,
-				value: cv,
-			}
+	for _, cell := range b.cells {
+		for len(cellsOn) > 0 && removalBudget > 0 && cell > cellsOn[len(cellsOn)-1] {
+			cellToRemoveIndex := len(cellsOn) - 1
+			cellsOn = cellsOn[:cellToRemoveIndex]
+			removalBudget--
 		}
+
+		cellsOn = append(cellsOn, cell)
 	}
 
-	maxLeft := cell{
-		value: -1,
+	var sb strings.Builder
+
+	for _, n := range cellsOn[:numOfCellsToTurnOn] {
+		sb.WriteString(strconv.Itoa(n))
 	}
 
-	for ci, cv := range b.cells[:max.index] {
-		if cv > maxLeft.value {
-			maxLeft = cell{
-				index: ci,
-				value: cv,
-			}
-		}
-	}
+	finalString := sb.String()
 
-	maxRight := cell{
-		value: -1,
-	}
+	finalJoltage, _ := strconv.ParseInt(finalString, 10, 64)
 
-	for ci, cv := range b.cells[max.index+1:] {
-		if cv > maxRight.value {
-			maxRight = cell{
-				index: ci,
-				value: cv,
-			}
-		}
-	}
-
-	maxInTensPlace := fmt.Sprintf("%d%d", max.value, maxRight.value)
-	maxInOnesPlace := fmt.Sprintf("%d%d", maxLeft.value, max.value)
-
-	maxInTensPlaceAsNumber, _ := strconv.Atoi(maxInTensPlace)
-	maxInOnesPlaceAsNumber, _ := strconv.Atoi(maxInOnesPlace)
-
-	if maxInTensPlaceAsNumber > maxInOnesPlaceAsNumber {
-		return maxInTensPlaceAsNumber
-	}
-
-	return maxInOnesPlaceAsNumber
+	return finalJoltage
 }
 
 func (b bank) Cells() []int {

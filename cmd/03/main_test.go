@@ -7,9 +7,9 @@ import (
 )
 
 func TestSolvePartOneWithExampleInput(t *testing.T) {
-	expected := 357
+	expected := int64(357)
 
-	result := solution.SolvePartOne("EXAMPLE.txt")
+	result := solution.Solve("EXAMPLE.txt", 2)
 
 	if result != expected {
 		t.Errorf("got %d but wanted %d", result, expected)
@@ -17,9 +17,29 @@ func TestSolvePartOneWithExampleInput(t *testing.T) {
 }
 
 func TestSolvePartOneWithInput(t *testing.T) {
-	expected := 17113
+	expected := int64(17113)
 
-	result := solution.SolvePartOne("INPUT.txt")
+	result := solution.Solve("INPUT.txt", 2)
+
+	if result != expected {
+		t.Errorf("got %d but wanted %d", result, expected)
+	}
+}
+
+func TestSolvePartTwoWithExampleInput(t *testing.T) {
+	expected := int64(3_121_910_778_619)
+
+	result := solution.Solve("EXAMPLE.txt", 12)
+
+	if result != expected {
+		t.Errorf("got %d but wanted %d", result, expected)
+	}
+}
+
+func TestSolvePartTwoWithInput(t *testing.T) {
+	expected := int64(169_709_990_062_889)
+
+	result := solution.Solve("INPUT.txt", 12)
 
 	if result != expected {
 		t.Errorf("got %d but wanted %d", result, expected)
