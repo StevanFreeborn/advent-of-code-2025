@@ -3,13 +3,32 @@ package file
 
 import (
 	"bufio"
+	"iter"
 	"os"
 )
 
-// TODO: Implement a StreamLines method
-// in the file package
+func ReadLines(filePath string) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		file, err := os.Open(filePath)
 
-func ReadLines(filePath string) []string {
+		if err != nil {
+			yield("")
+			return
+		}
+
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+
+		for scanner.Scan() {
+			if !yield(scanner.Text()) {
+				return
+			}
+		}
+	}
+}
+
+func ReadAllLines(filePath string) []string {
 	lines := []string{}
 
 	file, openErr := os.Open(filePath)
@@ -20,7 +39,7 @@ func ReadLines(filePath string) []string {
 
 	scanner := bufio.NewScanner(file)
 
-	for hasLine := scanner.Scan(); hasLine; hasLine = scanner.Scan() {
+	for scanner.Scan() {
 		line := scanner.Text()
 		lines = append(lines, line)
 	}

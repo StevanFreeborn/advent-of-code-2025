@@ -7,7 +7,7 @@ import (
 )
 
 func SolvePartOne(filePath string) int {
-	lines := file.ReadLines(filePath)
+	lines := file.ReadAllLines(filePath)
 	dial := dial.New()
 	total := 0
 
@@ -28,7 +28,7 @@ func SolvePartOne(filePath string) int {
 }
 
 func SolvePartTwo(filePath string) int {
-	lines := file.ReadLines(filePath)
+	lines := file.ReadAllLines(filePath)
 	dial := dial.New()
 
 	for _, line := range lines {
