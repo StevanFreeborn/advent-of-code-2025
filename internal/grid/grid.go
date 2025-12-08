@@ -1,8 +1,6 @@
 package grid
 
 import (
-	"fmt"
-
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/move"
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/position"
 )
@@ -51,15 +49,8 @@ func (g grid) NumberOfColumns() int {
 }
 
 func (g grid) InBounds(pos position.Position) bool {
-	if pos.Row() < 0 || pos.Row() >= g.numberOfRows {
-		return false
-	}
-
-	if pos.Column() < 0 || pos.Column() >= g.numberOfColumns {
-		return false
-	}
-
-	return true
+	_, ok := g.positions[pos]
+	return ok
 }
 
 func (g grid) GetValueAt(pos position.Position) string {
@@ -70,13 +61,10 @@ func (g grid) GetSameNeighborsOf(pos position.Position, moves []move.Move) []pos
 	similarNeighbors := []position.Position{}
 	originalValue := g.GetValueAt(pos)
 
-	fmt.Println("Moves to check:", moves)
 	for _, m := range moves {
 		postionRow := pos.Row()
 		positionColumn := pos.Column()
 
-		fmt.Println("Checking move:", m, "from position:", pos)
-		fmt.Println("Move rows:", m.NumberOfRows(), "columns:", m.NumberOfColumns())
 		neighborRow := postionRow + m.NumberOfRows()
 		neighborColumn := positionColumn + m.NumberOfColumns()
 		neighborPos := position.From(neighborRow, neighborColumn)
