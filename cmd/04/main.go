@@ -1,78 +1,38 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/file"
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/grid"
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/move"
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/position"
 )
 
 const PaperRollCharacter = "@"
-const EmptyCharacter = "."
-
-type move struct {
-	NumberOfRows    int
-	NumberOfColumns int
-}
-
-var (
-	up        = move{NumberOfRows: -1, NumberOfColumns: 0}
-	down      = move{NumberOfRows: 1, NumberOfColumns: 0}
-	right     = move{NumberOfRows: 0, NumberOfColumns: 1}
-	left      = move{NumberOfRows: 0, NumberOfColumns: -1}
-	upRight   = move{NumberOfRows: -1, NumberOfColumns: 1}
-	upLeft    = move{NumberOfRows: -1, NumberOfColumns: -1}
-	downRight = move{NumberOfRows: 1, NumberOfColumns: 1}
-	downLeft  = move{NumberOfRows: 1, NumberOfColumns: -1}
-)
-
-var moves = []move{
-	up,
-	down,
-	right,
-	left,
-	upRight,
-	upLeft,
-	downRight,
-	downLeft,
-}
 
 func SolvePartOne(filePath string) int {
 	input := file.ReadAllLines(filePath)
-	numberOfRows := len(input)
-	numberOfColumns := len(input[0])
+	grid := grid.From(input)
 
 	total := 0
 
-	for row := range numberOfRows {
-		for column := range numberOfColumns {
-			value := string(input[row][column])
+	for row := range grid.NumberOfRows() {
+		for column := range grid.NumberOfColumns() {
+			currentPosition := position.From(row, column)
+			value := grid.GetValueAt(currentPosition)
 
 			if value != PaperRollCharacter {
 				continue
 			}
 
-			numberOfPaperRolls := 0
+			sameNeighbors := grid.GetSameNeighborsOf(currentPosition, move.AllDirections)
 
-			for _, move := range moves {
-				neighborRow := row + move.NumberOfRows
-				neighborColumn := column + move.NumberOfColumns
-
-				if neighborRow > numberOfRows-1 || neighborRow < 0 {
-					continue
-				}
-
-				if neighborColumn > numberOfColumns-1 || neighborColumn < 0 {
-					continue
-				}
-
-				neighborValue := string(input[neighborRow][neighborColumn])
-
-				if neighborValue != PaperRollCharacter {
-					continue
-				}
-
-				numberOfPaperRolls++
+			if row == 0 && column == 3 {
+				fmt.Println(sameNeighbors)
 			}
 
-			if numberOfPaperRolls < 4 {
+			if len(sameNeighbors) < 4 {
 				total++
 			}
 		}
