@@ -1,6 +1,8 @@
 package grid
 
 import (
+	"strings"
+
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/move"
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/position"
 )
@@ -12,12 +14,17 @@ type Grid interface {
 	GetValueAt(position.Position) string
 	GetSameNeighborsOf(position.Position, []move.Move) []position.Position
 	Positions() map[position.Position]string
+	SetValuesAt(positions []position.Position, value string)
 }
 
 type grid struct {
 	numberOfRows    int
 	numberOfColumns int
 	positions       map[position.Position]string
+}
+
+func New(positions map[position.Position]string) Grid {
+	return grid{positions: positions}
 }
 
 func From(input []string) Grid {
@@ -94,4 +101,28 @@ func (g grid) Positions() map[position.Position]string {
 	}
 
 	return positions
+}
+
+func (g grid) SetValuesAt(positions []position.Position, value string) {
+	for _, pos := range positions {
+		g.positions[pos] = value
+	}
+}
+
+func (g grid) String() string {
+	var rowString strings.Builder
+
+	for row := range g.numberOfRows {
+		var colString strings.Builder
+
+		for col := range g.numberOfColumns {
+			pos := position.From(row, col)
+			value := g.positions[pos]
+			colString.WriteString(value)
+		}
+
+		rowString.WriteString(colString.String() + "\n")
+	}
+
+	return rowString.String()
 }
