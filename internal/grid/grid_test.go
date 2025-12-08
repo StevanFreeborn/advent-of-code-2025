@@ -1,6 +1,7 @@
 package grid_test
 
 import (
+	"maps"
 	"testing"
 
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/grid"
@@ -149,4 +150,52 @@ func TestGetSameNeighborsOf(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestPositions(t *testing.T) {
+	t.Run("it should return all positions in the grid", func(t *testing.T) {
+		expectedPositions := map[position.Position]string{
+			position.From(0, 0): "@",
+			position.From(0, 1): ".",
+			position.From(0, 2): ".",
+			position.From(1, 0): ".",
+			position.From(1, 1): "@",
+			position.From(1, 2): ".",
+			position.From(2, 0): ".",
+			position.From(2, 1): ".",
+			position.From(2, 2): "@",
+		}
+
+		input := []string{
+			"@..",
+			".@.",
+			"..@",
+		}
+
+		g := grid.From(input)
+
+		positions := g.Positions()
+
+		if maps.Equal(positions, expectedPositions) == false {
+			t.Errorf("expected Positions() to return %v, got %v", expectedPositions, positions)
+		}
+	})
+
+	t.Run("it should return a copy of the positions map", func(t *testing.T) {
+		input := []string{
+			"@..",
+			".@.",
+			"..@",
+		}
+
+		g := grid.From(input)
+
+		positions := g.Positions()
+
+		positions[position.From(0, 0)] = "X"
+
+		if g.GetValueAt(position.From(0, 0)) == "X" {
+			t.Errorf("expected modifying the returned positions map to not affect the grid's internal state")
+		}
+	})
 }

@@ -13,6 +13,7 @@ type Grid interface {
 	InBounds(position.Position) bool
 	GetValueAt(position.Position) string
 	GetSameNeighborsOf(position.Position, []move.Move) []position.Position
+	Positions() map[position.Position]string
 }
 
 type grid struct {
@@ -94,4 +95,15 @@ func (g grid) GetSameNeighborsOf(pos position.Position, moves []move.Move) []pos
 	}
 
 	return similarNeighbors
+}
+
+func (g grid) Positions() map[position.Position]string {
+	positions := map[position.Position]string{}
+
+	for pos, value := range g.positions {
+		newPosition := position.From(pos.Row(), pos.Column())
+		positions[newPosition] = value
+	}
+
+	return positions
 }
