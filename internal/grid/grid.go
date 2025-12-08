@@ -1,104 +1,97 @@
 package grid
 
+import (
+	"fmt"
+
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/move"
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/position"
+)
+
 type Grid interface {
-	Positions() map[Position]string
-	Walk()
+	NumberOfRows() int
+	NumberOfColumns() int
+	InBounds(position.Position) bool
+	GetValueAt(position.Position) string
+	GetSameNeighborsOf(position.Position, []move.Move) []position.Position
 }
 
 type grid struct {
-	positions map[Position]string
+	numberOfRows    int
+	numberOfColumns int
+	positions       map[position.Position]string
 }
 
-func NewGrid(input []string) Grid {
+func From(input []string) Grid {
 	numberOfRows := len(input)
 	numberOfColumns := len(input[0])
-	positions := map[Position]string{}
+	positions := map[position.Position]string{}
 
 	for row := range numberOfRows {
 		for column := range numberOfColumns {
 			value := string(input[row][column])
-			pos := NewPosition(row, column)
+			pos := position.From(row, column)
 			positions[pos] = value
 		}
 	}
 
 	return grid{
-		positions: positions,
+		numberOfRows:    numberOfRows,
+		numberOfColumns: numberOfColumns,
+		positions:       positions,
 	}
 }
 
-func (g grid) Positions() map[Position]string {
-	positions := map[Position]string{}
+func (g grid) NumberOfRows() int {
+	return g.numberOfRows
+}
 
-	for key, value := range g.positions {
-		newPosition := NewPosition(key.Row(), key.Column())
-		positions[newPosition] = value
+func (g grid) NumberOfColumns() int {
+	return g.numberOfColumns
+}
+
+func (g grid) InBounds(pos position.Position) bool {
+	if pos.Row() < 0 || pos.Row() >= g.numberOfRows {
+		return false
 	}
 
-	return positions
-}
-
-type Position interface {
-	Column() int
-	Row() int
-}
-
-type position struct {
-	column int
-	row    int
-}
-
-func NewPosition(row int, column int) Position {
-	return position{
-		row:    row,
-		column: column,
+	if pos.Column() < 0 || pos.Column() >= g.numberOfColumns {
+		return false
 	}
+
+	return true
 }
 
-func (p position) Row() int {
-	return p.row
+func (g grid) GetValueAt(pos position.Position) string {
+	return g.positions[pos]
 }
 
-func (p position) Column() int {
-	return p.column
-}
+func (g grid) GetSameNeighborsOf(pos position.Position, moves []move.Move) []position.Position {
+	similarNeighbors := []position.Position{}
+	originalValue := g.GetValueAt(pos)
 
-type Move interface {
-	NumberOfRows() int
-	NumberOfColumns() int
-}
+	fmt.Println("Moves to check:", moves)
+	for _, m := range moves {
+		postionRow := pos.Row()
+		positionColumn := pos.Column()
 
-type move struct {
-	numberOfRows    int
-	numberOfColumns int
-}
+		fmt.Println("Checking move:", m, "from position:", pos)
+		fmt.Println("Move rows:", m.NumberOfRows(), "columns:", m.NumberOfColumns())
+		neighborRow := postionRow + m.NumberOfRows()
+		neighborColumn := positionColumn + m.NumberOfColumns()
+		neighborPos := position.From(neighborRow, neighborColumn)
 
-func (m move) NumberOfRows() int {
-	return m.numberOfColumns
-}
+		if g.InBounds(neighborPos) == false {
+			continue
+		}
 
-func (m move) NumberOfColumns() int {
-	return m.numberOfColumns
-}
+		neighborValue := g.GetValueAt(neighborPos)
 
-var (
-	Up        = move{numberOfRows: -1, numberOfColumns: 0}
-	Down      = move{numberOfRows: 1, numberOfColumns: 0}
-	Right     = move{numberOfRows: 0, numberOfColumns: 1}
-	Left      = move{numberOfRows: 0, numberOfColumns: -1}
-	UpRight   = move{numberOfRows: -1, numberOfColumns: 1}
-	UpLeft    = move{numberOfRows: -1, numberOfColumns: -1}
-	DownRight = move{numberOfRows: 1, numberOfColumns: 1}
-	DownLeft  = move{numberOfRows: 1, numberOfColumns: -1}
-)
+		if neighborValue != originalValue {
+			continue
+		}
 
-var AllMoves = []Move{
-	Up,
-	Down,
-	Right,
-	Left,
-	UpRight,
-	UpLeft,
-	DownRight,
-	DownLeft,
+		similarNeighbors = append(similarNeighbors, neighborPos)
+	}
+
+	return similarNeighbors
 }
