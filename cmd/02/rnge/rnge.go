@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+// TODO: Refactor this to separate package
+// in internal/
+
 const RangeSeparatorCharacter = "-"
 
 type Range interface {
