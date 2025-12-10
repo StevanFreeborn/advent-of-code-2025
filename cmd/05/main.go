@@ -74,13 +74,56 @@ func SolvePartOne(filePath string) int {
 	total := 0
 
 	for _, id := range ids {
-		for _, rnge := range ranges {
+		for _, rnge := range mergedRanges {
 			if id >= rnge.start && id <= rnge.end {
 				total++
 				break
 			}
 		}
+	}
 
+	return total
+}
+
+func SolvePartTwo(filePath string) int64 {
+	input := file.ReadAllLines(filePath)
+
+	ranges := []rnge{}
+
+	for _, line := range input {
+		if line == "" {
+			break
+		}
+
+		rnge := NewRange(line)
+		ranges = append(ranges, rnge)
+	}
+
+	slices.SortFunc(ranges, func(a rnge, b rnge) int {
+		return cmp.Compare(a.start, b.start)
+	})
+
+	mergedRanges := []rnge{
+		ranges[0],
+	}
+
+	for _, currentRange := range ranges {
+		lastMergedRange := mergedRanges[len(mergedRanges)-1]
+
+		if currentRange.start > lastMergedRange.end {
+			mergedRanges = append(mergedRanges, currentRange)
+			continue
+		}
+
+		lastMergedRange.end = int64(math.Max(float64(lastMergedRange.end), float64(currentRange.end)))
+		mergedRanges[len(mergedRanges)-1] = lastMergedRange
+	}
+
+	total := int64(0)
+
+	for _, rnge := range mergedRanges {
+		diff := (rnge.end - rnge.start) + 1
+		total += diff
 	}
 
 	return total
