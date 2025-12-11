@@ -1,81 +1,35 @@
 package main
 
 import (
-	"regexp"
 	"strconv"
+	"strings"
 
+	"github.com/StevanFreeborn/advent-of-code-2025/cmd/06/problem"
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/file"
 )
 
 func SolvePartOne(filePath string) int {
 	input := file.ReadAllLines(filePath)
-	inputLength := len(input)
-	lastLineIndex := inputLength - 1
-
-	operandLines := input[:lastLineIndex]
-	operators := input[lastLineIndex]
-	listOfOperands := [][]int{}
-
-	for _, line := range operandLines {
-		parsedOperands := parseOperands(line)
-		listOfOperands = append(listOfOperands, parsedOperands)
-	}
-
-	ops := parseOperators(operators)
+	numOfRows := len(input)
+	numOfCols := len(strings.Fields(input[0]))
+	operatorRowNumber := numOfRows - 1
+	operators := strings.Fields(input[operatorRowNumber])
 
 	total := 0
 
-	for i := range len(ops) {
-		operator := ops[i]
+	for col := range numOfCols {
+		operator := operators[col]
+		operands := []int{}
 
-		result := 0
-
-		for _, operands := range listOfOperands {
-			if result == 0 {
-				result = operands[i]
-				continue
-			}
-
-			if operator == "*" {
-				result *= operands[i]
-				continue
-			}
-
-			if operator == "+" {
-				result += operands[i]
-				continue
-			}
+		for row := range operatorRowNumber {
+			operand, _ := strconv.Atoi(strings.Fields(input[row])[col])
+			operands = append(operands, operand)
 		}
 
+		problem := problem.From(operator, operands)
+		result := problem.Solve()
 		total += result
 	}
 
 	return total
-}
-
-func parseOperators(line string) []string {
-	operatorsRegex := regexp.MustCompile(`(\*|\+)`)
-	matches := operatorsRegex.FindAllStringSubmatch(line, -1)
-
-	operators := []string{}
-
-	for _, match := range matches {
-		operators = append(operators, match[1])
-	}
-
-	return operators
-}
-
-func parseOperands(line string) []int {
-	numbersRegex := regexp.MustCompile(`(\d+)`)
-	matches := numbersRegex.FindAllStringSubmatch(line, -1)
-
-	operands := []int{}
-
-	for _, match := range matches {
-		num, _ := strconv.Atoi(match[1])
-		operands = append(operands, num)
-	}
-
-	return operands
 }
