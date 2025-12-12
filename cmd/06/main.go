@@ -33,3 +33,38 @@ func SolvePartOne(filePath string) int {
 
 	return total
 }
+
+func SolvePartTwo(filePath string) int {
+	input := file.ReadAllLines(filePath)
+	numOfRows := len(input)
+	operatorRowIndex := numOfRows - 1
+	operatorRow := input[operatorRowIndex]
+	operatorRowLength := len(operatorRow)
+
+	total := 0
+	operands := []int{}
+
+	for operatorIndex := operatorRowLength - 1; operatorIndex >= 0; operatorIndex-- {
+		var operandBuilder strings.Builder
+
+		for row := range numOfRows - 1 {
+			v := string(input[row][operatorIndex])
+			operandBuilder.WriteString(v)
+		}
+
+		operandString := strings.TrimSpace(operandBuilder.String())
+		operand, _ := strconv.Atoi(operandString)
+		operands = append(operands, operand)
+		operandBuilder.Reset()
+
+		operator := string(operatorRow[operatorIndex])
+
+		if operator != " " {
+			total += problem.From(operator, operands).Solve()
+			operatorIndex--
+			operands = []int{}
+		}
+	}
+
+	return total
+}
