@@ -47,7 +47,7 @@ func SolvePartTwo(filePath string) int {
 	for operatorIndex := operatorRowLength - 1; operatorIndex >= 0; operatorIndex-- {
 		var operandBuilder strings.Builder
 
-		for row := range numOfRows - 1 {
+		for row := range operatorRowIndex {
 			v := string(input[row][operatorIndex])
 			operandBuilder.WriteString(v)
 		}
