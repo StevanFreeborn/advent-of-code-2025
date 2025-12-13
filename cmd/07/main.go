@@ -2,7 +2,10 @@ package main
 
 import (
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/file"
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/grid"
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/move"
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/position"
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/queue"
 )
 
 const StartCharacter = "S"
@@ -10,66 +13,62 @@ const SplitterCharacter = "^"
 
 func SolvePartOne(filePath string) int {
 	input := file.ReadAllLines(filePath)
-	numOfRows := len(input)
-	numOfCols := len(input[0])
+	grid := grid.From(input)
 
-	startRow := -1
-	startCol := -1
+	var startPosition position.Position
 
-	for row := range numOfRows - 1 {
-		for col := range numOfCols - 1 {
-			v := string(input[row][col])
+	for row := range grid.NumberOfRows() - 1 {
+		for col := range grid.NumberOfColumns() - 1 {
+			current := position.From(row, col)
+			v := grid.GetValueAt(current)
 
 			if v == StartCharacter {
-				startRow = row
-				startCol = col
+				startPosition = current
 				break
 			}
 		}
 	}
 
-	if startRow < 0 || startCol < 0 {
+	if startPosition == nil {
 		panic("unable to find start location")
 	}
 
-	beamStart := position.From(startRow+1, startCol)
-	beamsQueue := []position.Position{
-		beamStart,
-	}
+	beamStart := startPosition.Move(move.Down)
+	beamsQueue := queue.New[position.Position]()
+	beamsQueue.Enqueue(beamStart)
+
 	visited := map[position.Position]bool{}
 
 	total := 0
 
-	for len(beamsQueue) > 0 {
-		currentBeam := beamsQueue[0]
-		beamsQueue = beamsQueue[1:]
+	for beamsQueue.IsEmpty() == false {
+		currentBeam, _ := beamsQueue.Dequeue()
 
 		if visited[currentBeam] {
 			continue
 		}
 
-		if currentBeam.Row() < 0 || currentBeam.Row() >= numOfRows {
-			continue
-		}
-
-		if currentBeam.Column() < 0 || currentBeam.Column() >= numOfCols {
+		if grid.InBounds(currentBeam) == false {
 			continue
 		}
 
 		visited[currentBeam] = true
 
-		value := string(input[currentBeam.Row()][currentBeam.Column()])
+		value := grid.GetValueAt(currentBeam)
 
 		if value == SplitterCharacter {
 			total++
-			rightBeam := position.From(currentBeam.Row(), currentBeam.Column()+1)
-			leftBeam := position.From(currentBeam.Row(), currentBeam.Column()-1)
-			beamsQueue = append(beamsQueue, rightBeam, leftBeam)
+
+			rightBeam := currentBeam.Move(move.Right)
+			leftBeam := currentBeam.Move(move.Left)
+
+			beamsQueue.Enqueue(rightBeam)
+			beamsQueue.Enqueue(leftBeam)
 			continue
 		}
 
-		nextBeam := position.From(currentBeam.Row()+1, currentBeam.Column())
-		beamsQueue = append(beamsQueue, nextBeam)
+		nextBeam := currentBeam.Move(move.Down)
+		beamsQueue.Enqueue(nextBeam)
 	}
 
 	return total
