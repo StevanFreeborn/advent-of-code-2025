@@ -17,15 +17,10 @@ func SolvePartOne(filePath string) int {
 
 	var startPosition position.Position
 
-	for row := range grid.NumberOfRows() - 1 {
-		for col := range grid.NumberOfColumns() - 1 {
-			current := position.From(row, col)
-			v := grid.GetValueAt(current)
-
-			if v == StartCharacter {
-				startPosition = current
-				break
-			}
+	for p, v := range grid.Positions() {
+		if v == StartCharacter {
+			startPosition = p
+			break
 		}
 	}
 
