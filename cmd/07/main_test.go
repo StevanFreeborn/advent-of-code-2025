@@ -25,3 +25,23 @@ func TestSolvePartOneWithInput(t *testing.T) {
 		t.Errorf("SolvePartOne() = %d; want %d", result, expected)
 	}
 }
+
+func TestSolvePartTwoWithExampleInput(t *testing.T) {
+	expected := 40
+
+	result := solution.SolvePartTwo("EXAMPLE.txt")
+
+	if result != expected {
+		t.Errorf("SolveTwoOne() = %d; want %d", result, expected)
+	}
+}
+
+func TestSolvePartTwoWithInput(t *testing.T) {
+	expected := 73_007_003_089_792
+
+	result := solution.SolvePartTwo("INPUT.txt")
+
+	if result != expected {
+		t.Errorf("SolveTwoOne() = %d; want %d", result, expected)
+	}
+}
