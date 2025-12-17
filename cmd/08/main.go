@@ -9,6 +9,50 @@ import (
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/queue"
 )
 
+func SolvePartTwo(filePath string) int {
+	boxes := []box.Box{}
+
+	for line := range file.ReadLines(filePath) {
+		boxes = append(boxes, box.From(line))
+	}
+
+	estimator := estimator.From(boxes)
+	circuitsMap := estimator.CreateMap()
+
+	numberOfSets := len(boxes)
+
+	for _, connection := range estimator.PossibleConnections() {
+		startRoot := circuitsMap.FindRootBoxFor(connection.Start())
+		endRoot := circuitsMap.FindRootBoxFor(connection.End())
+
+		if startRoot == endRoot {
+			continue
+		}
+
+		startRootValue, _ := circuitsMap.GetValueFor(startRoot)
+		endRootValue, _ := circuitsMap.GetValueFor(endRoot)
+
+		if startRootValue.Size() < endRootValue.Size() {
+			startRootValue.UpdateParent(endRoot)
+			endRootValue.IncreaseSize(startRootValue.Size())
+		} else {
+			endRootValue.UpdateParent(startRoot)
+			startRootValue.IncreaseSize(endRootValue.Size())
+		}
+
+		circuitsMap.UpdateValueFor(startRoot, startRootValue)
+		circuitsMap.UpdateValueFor(endRoot, endRootValue)
+
+		numberOfSets--
+
+		if numberOfSets == 1 {
+			return connection.Start().X() * connection.End().X()
+		}
+	}
+
+	return -1
+}
+
 func SolvePartOne(filePath string, numOfConnections int) int {
 	boxes := []box.Box{}
 
