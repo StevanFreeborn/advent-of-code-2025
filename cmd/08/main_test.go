@@ -17,7 +17,7 @@ func TestSolvePartOneWithExampleInput(t *testing.T) {
 }
 
 func TestSolvePartOneWithInput(t *testing.T) {
-	expected := 62186
+	expected := 62_186
 
 	result := solution.SolvePartOne("INPUT.txt", 1000)
 
@@ -37,11 +37,31 @@ func TestSolvePartOneAgainWithExampleInput(t *testing.T) {
 }
 
 func TestSolvePartOneAgainWithInput(t *testing.T) {
-	expected := 62186
+	expected := 62_186
 
 	result := solution.SolvePartOneAgain("INPUT.txt", 1000)
 
 	if result != expected {
 		t.Errorf("SolvePartOneAgain returned %d, expected %d", result, expected)
+	}
+}
+
+func TestSolvePartTwoWithExampleInput(t *testing.T) {
+	expected := 25_272
+
+	result := solution.SolvePartTwo("EXAMPLE.txt")
+
+	if result != expected {
+		t.Errorf("SolvePartTwo returned %d, expected %d", result, expected)
+	}
+}
+
+func TestSolvePartTwoWithInput(t *testing.T) {
+	expected := 8_420_405_530
+
+	result := solution.SolvePartTwo("INPUT.txt")
+
+	if result != expected {
+		t.Errorf("SolvePartTwo returned %d, expected %d", result, expected)
 	}
 }
