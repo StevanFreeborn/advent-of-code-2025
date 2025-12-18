@@ -1,7 +1,11 @@
 // Package position provides types and functions to represent and manipulate positions and moves on a 2D grid.
 package position
 
-import "github.com/StevanFreeborn/advent-of-code-2025/internal/move"
+import (
+	"fmt"
+
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/move"
+)
 
 type Position interface {
 	Row() int
@@ -31,4 +35,8 @@ func (p position) Column() int {
 
 func (p position) Move(move move.Move) Position {
 	return From(p.row+move.NumberOfRows(), p.column+move.NumberOfColumns())
+}
+
+func (p position) String() string {
+	return fmt.Sprintf("c: %d r: %d", p.column, p.row)
 }
