@@ -2,7 +2,6 @@ package main
 
 import (
 	"math"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -43,8 +42,7 @@ func SolvePartOne(filePath string) int {
 	return largestArea
 }
 
-// TODO: How would we construct all the positions
-// in the polygon?
+// TODO: Refactor below so more understandable
 
 func SolvePartTwo(filePath string) int {
 	positions := []position.Position{}
@@ -57,19 +55,6 @@ func SolvePartTwo(filePath string) int {
 		positions = append(positions, p)
 	}
 
-	rowPositions := []int{}
-	columnPositions := []int{}
-
-	for _, positions := range positions {
-		rowPositions = append(rowPositions, positions.Row())
-		columnPositions = append(columnPositions, positions.Column())
-	}
-
-	minRow := slices.Min(rowPositions)
-	maxRow := slices.Max(rowPositions)
-	minCol := slices.Min(columnPositions)
-	maxCol := slices.Max(columnPositions)
-
 	numberOfPositions := len(positions)
 	largestArea := 0
 
@@ -78,8 +63,13 @@ func SolvePartTwo(filePath string) int {
 			start := positions[i]
 			end := positions[j]
 
-			width := int(math.Abs(float64(end.Column()-start.Column())) + 1)
-			height := int(math.Abs(float64(end.Row()-start.Row())) + 1)
+			rectMinRow := int(math.Min(float64(start.Row()), float64(end.Row())))
+			rectMaxRow := int(math.Max(float64(start.Row()), float64(end.Row())))
+			rectMinCol := int(math.Min(float64(start.Column()), float64(end.Column())))
+			rectMaxCol := int(math.Max(float64(start.Column()), float64(end.Column())))
+
+			width := int(math.Abs(float64(rectMaxCol-rectMinCol)) + 1)
+			height := int(math.Abs(float64(rectMaxRow-rectMinRow)) + 1)
 
 			a := width * height
 
@@ -87,46 +77,77 @@ func SolvePartTwo(filePath string) int {
 				continue
 			}
 
-			rectMinRow := math.Min(float64(start.Row()), float64(end.Row()))
-			rectMaxRow := math.Max(float64(start.Row()), float64(end.Row()))
-			rectMinCol := math.Min(float64(start.Column()), float64(end.Column()))
-			rectMaxCol := math.Max(float64(start.Column()), float64(end.Column()))
-
-			// is center of rect inside our polygon?
 			centerRow := int((rectMaxRow + rectMinRow) / 2)
 			centerCol := int((rectMaxCol + rectMinCol) / 2)
 			center := position.From(centerRow, centerCol)
 
 			centerIsInside := false
-			j := numberOfPositions - 1
 
-			for i := 0; i < numberOfPositions; i++ {
+			for i := range numberOfPositions {
 				edgeStart := positions[i]
-				edgeEnd := positions[j]
+				edgeEndIndex := (i + 1) % numberOfPositions
+				edgeEnd := positions[edgeEndIndex]
 
-				edgeCoversCenterRow := (edgeStart.Row() > center.Row()) != (edgeEnd.Row() > center.Row())
+				isCenterVerticallyBetweenEdge := (edgeStart.Row() <= center.Row()) && (center.Row() <= edgeEnd.Row())
 
-				edgeHorizontalDistance := edgeEnd.Column() - edgeStart.Column()
-				edgeVeritcalDistance := edgeEnd.Row() - edgeStart.Row()
-				centerVerticalOffset := center.Row() - edgeStart.Row()
-				verticalDistanceCompleted := centerVerticalOffset / edgeVeritcalDistance
-				xIntersection := center.Column() + edgeHorizontalDistance*verticalDistanceCompleted
-				edgeIsToRightOfCenter := center.Column() < xIntersection
+				edgeTotalHeight := int(math.Abs(float64(edgeEnd.Row() - edgeStart.Row())))
+				edgeTotalWidth := int(math.Abs(float64(edgeEnd.Column() - edgeStart.Column())))
+				centerPercentageOfEdgeHeight := int(float64(center.Row()-edgeStart.Row()) / float64(edgeTotalHeight))
+				edgeColumnAtCenterRow := edgeStart.Column() + centerPercentageOfEdgeHeight*edgeTotalWidth
+				isCenterHorizontallyToTheLeft := center.Row() <= edgeColumnAtCenterRow
 
-				if edgeCoversCenterRow && edgeIsToRightOfCenter {
+				if isCenterVerticallyBetweenEdge && isCenterHorizontallyToTheLeft {
 					centerIsInside = !centerIsInside
 				}
-
-				j = i
 			}
 
 			if centerIsInside == false {
 				continue
 			}
 
-			// TODO: We need to figure this out
-			// if edges of polygon intersect with
-			// edges of rectangle
+			isIntersectedByEdge := false
+
+			for i := range numberOfPositions {
+				currPos := positions[i]
+				nextPosIndex := (i + 1) % numberOfPositions
+				nextPos := positions[nextPosIndex]
+
+				if currPos.Column() == nextPos.Column() {
+					col := currPos.Column()
+
+					if col > rectMinCol && col < rectMaxCol {
+						edgeMinRow := math.Min(float64(currPos.Row()), float64(nextPos.Row()))
+						edgeMaxRow := math.Max(float64(currPos.Row()), float64(nextPos.Row()))
+
+						overlapStart := int(math.Max(edgeMinRow, float64(rectMinRow)))
+						overlapEnd := int(math.Min(edgeMaxRow, float64(rectMaxRow)))
+
+						if overlapEnd > overlapStart {
+							isIntersectedByEdge = true
+							break
+						}
+					}
+				} else {
+					row := currPos.Row()
+
+					if row > rectMinRow && row < rectMaxRow {
+						edgeMinCol := math.Min(float64(currPos.Column()), float64(nextPos.Column()))
+						edgeMaxCol := math.Max(float64(currPos.Column()), float64(nextPos.Column()))
+
+						overlapStart := int(math.Max(edgeMinCol, float64(rectMinCol)))
+						overlapEnd := int(math.Min(edgeMaxCol, float64(rectMaxCol)))
+
+						if overlapEnd > overlapStart {
+							isIntersectedByEdge = true
+							break
+						}
+					}
+				}
+			}
+
+			if isIntersectedByEdge {
+				continue
+			}
 
 			largestArea = a
 		}
