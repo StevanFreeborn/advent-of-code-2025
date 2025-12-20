@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -77,8 +79,60 @@ func NewButton(line string) button {
 	}
 }
 
-func (m machine) Configure([]bool) int {
-	return 0
+func (m machine) Configure(desiredState []bool) int {
+	combinations := [][]bool{}
+	minPresses := math.MaxInt
+	numberOfButtons := len(m.buttons)
+	numberOfCombinations := int(math.Pow(2, float64(numberOfButtons)))
+	currentCombination := make([]bool, numberOfButtons)
+
+	for range numberOfCombinations {
+		temp := make([]bool, numberOfButtons)
+		copy(temp, currentCombination)
+
+		combinations = append(combinations, temp)
+
+		for j := range numberOfButtons {
+			if currentCombination[j] == false {
+				currentCombination[j] = true
+				break
+			} else {
+				currentCombination[j] = false
+			}
+		}
+	}
+
+	for _, currentCombination := range combinations {
+		currentPresses := 0
+		switchesCopy := []bool{}
+
+		for _, v := range m.switches {
+			switchesCopy = append(switchesCopy, v)
+		}
+
+		for bi, bs := range currentCombination {
+			if bs == false {
+				continue
+			}
+
+			currentPresses++
+			switchesToToggle := m.buttons[bi].switchesControlled
+
+			for _, switchToToggle := range switchesToToggle {
+				switchesCopy[switchToToggle] = !switchesCopy[switchToToggle]
+			}
+		}
+
+		if slices.Equal(switchesCopy, desiredState) == false {
+			continue
+		}
+
+		if currentPresses < minPresses {
+			minPresses = currentPresses
+		}
+	}
+
+	return minPresses
 }
 
 func SolvePartOne(filePath string) int {
@@ -105,7 +159,6 @@ func SolvePartOne(filePath string) int {
 		numberOfLights := len(lightDiagram)
 
 		machine := NewMachine(numberOfLights, buttonsPart)
-		fmt.Println(machine)
 		buttonsPressed := machine.Configure(lightDiagram)
 		total += buttonsPressed
 	}
