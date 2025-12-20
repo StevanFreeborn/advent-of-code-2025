@@ -16,3 +16,15 @@ func SolvePartOne(filePath string) int {
 
 	return total
 }
+
+func SolvePartTwo(filePath string) int {
+	total := 0
+
+	for line := range file.ReadLines(filePath) {
+		machine := machine.From(line)
+		buttonsPressed := machine.ConfigureJoltages()
+		total += buttonsPressed
+	}
+
+	return total
+}

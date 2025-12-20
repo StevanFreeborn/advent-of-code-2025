@@ -2,6 +2,7 @@
 package machine
 
 import (
+	"fmt"
 	"math"
 	"regexp"
 	"slices"
@@ -13,6 +14,7 @@ import (
 
 type Machine interface {
 	ConfigureLights() int
+	ConfigureJoltages() int
 }
 
 type machine struct {
@@ -112,6 +114,54 @@ func (m machine) ConfigureLights() int {
 			minPresses = currentPresses
 		}
 	}
+
+	return minPresses
+}
+
+func (m machine) ConfigureJoltages() int {
+	minPresses := 0
+	// counters := make([]int, len(m.joltageSettings))
+
+	// given the target joltage of a counter
+	// how many times can I press a particular button
+	// before making one of the counters that the button
+	// affects invalid
+	// 3,5,4,7
+	// 0 (3)
+	// 1 (1,3)
+	// 2 (2)
+	// 3 (2,3)
+	// 4 (0,2)
+	// 5 (0,1)
+
+	// (0n * 1) + (1n * 0) + (1n * 1) + (3n * 1) = 7
+	// 2n + 3n + 4n = 4
+
+	// TODO: I need to use Gausian elimination
+	// to solve this
+	// TODO: Or matrix method maybe?
+
+	rows := len(m.desiredJoltages)
+	cols := len(m.buttons)
+	grid := make([][]int, rows)
+
+	for r := range rows {
+		grid[r] = make([]int, cols+1)
+
+		for i, b := range m.buttons {
+			for _, sw := range b.Switches() {
+				if sw == r {
+					grid[r][i] = 1
+				}
+			}
+		}
+
+		grid[r][cols] = m.desiredJoltages[r]
+
+		fmt.Println(grid[r])
+	}
+
+	fmt.Println()
 
 	return minPresses
 }
