@@ -27,9 +27,19 @@ func TestSolvePartOneWithInput(t *testing.T) {
 }
 
 func TestSolvePartTwoWithExampleInput(t *testing.T) {
-	expected := 7
+	expected := 33
 
 	result := solution.SolvePartTwo("EXAMPLE.txt")
+
+	if result != expected {
+		t.Errorf("got %d but wanted %d", result, expected)
+	}
+}
+
+func TestSolvePartTwoWithInput(t *testing.T) {
+	expected := -1
+
+	result := solution.SolvePartTwo("INPUT.txt")
 
 	if result != expected {
 		t.Errorf("got %d but wanted %d", result, expected)
