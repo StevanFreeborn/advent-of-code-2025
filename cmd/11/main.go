@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/file"
@@ -47,59 +46,7 @@ func SolvePartOne(filePath string) int {
 	return pathCount
 }
 
-type node struct {
-	value   string
-	fftSeen bool
-	dacSeen bool
-}
-
 func SolvePartTwo(filePath string) int {
-	adjacencyList := map[string][]string{}
-
-	for line := range file.ReadLines(filePath) {
-		parts := strings.Split(line, ": ")
-		from := parts[0]
-		toList := strings.Split(parts[1], " ")
-		adjacencyList[from] = toList
-	}
-
-	stack := stack.New[node]()
-	stack.Push(node{
-		value: SVR_NODE,
-	})
-	pathCount := 0
-
-	for stack.IsEmpty() == false {
-		current, _ := stack.Pop()
-
-		if current.value == FFT_NODE {
-			current.fftSeen = true
-		}
-
-		if current.value == DAC_NODE {
-			current.dacSeen = true
-		}
-
-		if current.value == OUT_NODE && current.dacSeen && current.fftSeen {
-			pathCount++
-			continue
-		}
-
-		neighbors := adjacencyList[current.value]
-
-		for _, n := range neighbors {
-			stack.Push(node{
-				value:   n,
-				fftSeen: current.fftSeen,
-				dacSeen: current.dacSeen,
-			})
-		}
-	}
-
-	return pathCount
-}
-
-func SolvePartTwoAgain(filePath string) int {
 	adjacencyList := map[string][]string{}
 	inDegrees := map[string]int{}
 	allNodes := map[string]bool{}
@@ -147,8 +94,14 @@ func SolvePartTwoAgain(filePath string) int {
 		}
 	}
 
+	pathA := countPaths(SVR_NODE, FFT_NODE, processOrder, adjacencyList) * countPaths(FFT_NODE, DAC_NODE, processOrder, adjacencyList) * countPaths(DAC_NODE, OUT_NODE, processOrder, adjacencyList)
+	pathB := countPaths(SVR_NODE, DAC_NODE, processOrder, adjacencyList) * countPaths(DAC_NODE, FFT_NODE, processOrder, adjacencyList) * countPaths(FFT_NODE, OUT_NODE, processOrder, adjacencyList)
+	return pathA + pathB
+}
+
+func countPaths(start string, end string, processOrder []string, adjacencyList map[string][]string) int {
 	pathsCount := map[string]int{}
-	pathsCount[SVR_NODE] = 1
+	pathsCount[start] = 1
 
 	for _, item := range processOrder {
 		if pathsCount[item] == 0 {
@@ -160,13 +113,5 @@ func SolvePartTwoAgain(filePath string) int {
 		}
 	}
 
-	// TODO: Could I process the graph
-	// in smaller pieces and then multiply
-	// those path to figure out what the
-	// total number of paths are.
-	fmt.Println(pathsCount[OUT_NODE])
-	fmt.Println(pathsCount[DAC_NODE])
-	fmt.Println(pathsCount[FFT_NODE])
-
-	return 0
+	return pathsCount[end]
 }

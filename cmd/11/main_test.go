@@ -1,7 +1,6 @@
 package main_test
 
 import (
-	"fmt"
 	"testing"
 
 	solution "github.com/StevanFreeborn/advent-of-code-2025/cmd/11"
@@ -38,33 +37,11 @@ func TestSolvePartTwoWithExampleInput(t *testing.T) {
 }
 
 func TestSolvePartTwoWithInput(t *testing.T) {
-	expected := -1
-
-	fmt.Println("HERE")
+	expected := 393_474_305_030_400
 
 	result := solution.SolvePartTwo("INPUT.txt")
 
 	if result != expected {
 		t.Errorf("SolvePartTwo(INPUT.txt) = %d; want %d", result, expected)
-	}
-}
-
-func TestSolvePartTwoAgainWithExampleInput(t *testing.T) {
-	expected := 2
-
-	result := solution.SolvePartTwoAgain("EXAMPLE_TWO.txt")
-
-	if result != expected {
-		t.Errorf("SolvePartTwoAgain(EXAMPLE_TWO.txt) = %d; want %d", result, expected)
-	}
-}
-
-func TestSolvePartTwoAgainWithInput(t *testing.T) {
-	expected := -1
-
-	result := solution.SolvePartTwoAgain("INPUT.txt")
-
-	if result != expected {
-		t.Errorf("SolvePartTwoAgain(INPUT.txt) = %d; want %d", result, expected)
 	}
 }
