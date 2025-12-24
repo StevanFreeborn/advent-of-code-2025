@@ -11,14 +11,17 @@ import (
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/position"
 )
 
-// shape.GenerateAllVariants() []Shape
-
 type Shape interface {
 	Id() int
 	GetKey() string
 	GenerateVariants() []Shape
 	RotateClockwise() Shape
 	FlipVertically() Shape
+	String() string
+	Area() int
+	MaxRow() int
+	MaxColumn() int
+	Positions() []position.Position
 }
 
 type shape struct {
@@ -46,37 +49,81 @@ func From(lines []string) Shape {
 	return shape{id: id, positions: positions}
 }
 
+func (s shape) Positions() []position.Position {
+	return s.positions
+}
+
+func (s shape) MaxRow() int {
+	maxRow := 0
+
+	for _, p := range s.positions {
+		if p.Row() > maxRow {
+			maxRow = p.Row()
+		}
+	}
+
+	return maxRow
+}
+
+func (s shape) MaxColumn() int {
+	maxColumn := 0
+
+	for _, p := range s.positions {
+		if p.Column() > maxColumn {
+			maxColumn = p.Column()
+		}
+	}
+
+	return maxColumn
+}
+
+func (s shape) Area() int {
+	return len(s.positions)
+}
+
 func (s shape) GenerateVariants() []Shape {
 	shapes := []Shape{}
 	var current Shape
 	current = s
 	numberOfTransformations := 4
 
-	// Rotate 90 clockwise
-	for range numberOfTransformations {
-		current = current.RotateClockwise()
-		shapes = append(shapes, current)
-	}
-
-	current = s
-
-	// Flip then rotate 90 clockwise
 	for range numberOfTransformations {
 		shapes = append(shapes, current)
 		flipped := current.FlipVertically()
 		shapes = append(shapes, flipped)
-		current = flipped.RotateClockwise()
+		current = current.RotateClockwise()
 	}
 
-	current = s
-
-	// Rotate 90 clockwise then flip
-	for range numberOfTransformations {
-		shapes = append(shapes, current)
-		rotated := current.RotateClockwise()
-		shapes = append(shapes, rotated)
-		current = rotated.FlipVertically()
-	}
+	// // Rotate 90 clockwise
+	// for range numberOfTransformations {
+	// 	current = current.RotateClockwise()
+	// 	shapes = append(shapes, current)
+	// }
+	//
+	// current = s
+	//
+	// // Flip then rotate 90 clockwise
+	// for range numberOfTransformations {
+	// 	shapes = append(shapes, current)
+	// 	flipped := current.FlipVertically()
+	// 	shapes = append(shapes, flipped)
+	// 	current = flipped.RotateClockwise()
+	// }
+	//
+	// current = s
+	//
+	// // Rotate 90 clockwise then flip
+	// for range numberOfTransformations {
+	// 	shapes = append(shapes, current)
+	// 	rotated := current.RotateClockwise()
+	// 	shapes = append(shapes, rotated)
+	// 	current = rotated.FlipVertically()
+	// }
+	//
+	// current = s
+	// rotated := current.RotateClockwise().RotateClockwise()
+	// flipped := rotated.FlipVertically()
+	// shapes = append(shapes, flipped)
 
 	seenShapes := map[string]Shape{}
 

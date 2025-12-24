@@ -1,32 +1,36 @@
 package main
 
 import (
-	"fmt"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/StevanFreeborn/advent-of-code-2025/cmd/12/shape"
 	"github.com/StevanFreeborn/advent-of-code-2025/internal/file"
 )
 
-// TODO: Make the splitting
-// safe for LF and CRLF
-const NEWLINE = "\r\n"
 const COLON = ":"
 const X = "x"
 
 func SolvePartOne(filePath string) int {
-	input := file.ReadAllText(filePath)
-	sections := strings.Split(strings.TrimSpace(input), NEWLINE+NEWLINE)
+	twoNewLineRegex := regexp.MustCompile(`\r?\n\r?\n`)
+	newLineRegex := regexp.MustCompile(`\r?\n`)
 
-	shapes := []shape.Shape{}
+	input := file.ReadAllText(filePath)
+	sections := twoNewLineRegex.Split(strings.TrimSpace(input), -1)
+
+	total := 0
+	shapes := map[int][]shape.Shape{}
 	regions := []string{}
 
 	for _, section := range sections {
-		lines := strings.Split(strings.TrimSpace(section), NEWLINE)
+		lines := newLineRegex.Split(strings.TrimSpace(section), -1)
 		header := lines[0]
 
 		if strings.Contains(header, COLON) && strings.Contains(header, X) == false {
-			shapes = append(shapes, shape.From(lines))
+			shape := shape.From(lines)
+			shapes[shape.Id()] = shape.GenerateVariants()
 			continue
 		}
 
@@ -37,23 +41,124 @@ func SolvePartOne(filePath string) int {
 		}
 	}
 
-	// TODO: We are currently not generating
-	// all the expected variants. Need to debug this
-	// WRITE AUTOMATED UNIT TESTS DUMMY
-	// WHEN YOU READ THIS IN THE FUTURE YOU ARE GOING
-	// TO WANT TO IGNORE IT...DON'T!
-	// - Past Stevan
-	for _, s := range shapes {
-		if s.Id() != 1 && s.Id() != 2 && s.Id() != 0 {
-			continue
+	for _, region := range regions {
+		parts := strings.Split(region, COLON)
+		dims := strings.Split(parts[0], X)
+		width, _ := strconv.Atoi(dims[0])
+		height, _ := strconv.Atoi(dims[1])
+
+		countsStr := strings.Fields(parts[1])
+		requiredShapes := []int{}
+
+		for id, s := range countsStr {
+			count, _ := strconv.Atoi(s)
+
+			for range count {
+				requiredShapes = append(requiredShapes, id)
+			}
 		}
 
-		fmt.Println("SHAPE ID", s.Id())
-
-		for _, v := range s.GenerateVariants() {
-			fmt.Println(v)
+		if canFit(width, height, requiredShapes, shapes) {
+			total++
 		}
 	}
 
-	return 0
+	return total
+}
+
+type item struct {
+	id       int
+	area     int
+	variants []shape.Shape
+}
+
+func canFit(width int, height int, requiredShapes []int, shapes map[int][]shape.Shape) bool {
+	totalArea := 0
+
+	itemsToPlace := make([]item, 0, len(requiredShapes))
+
+	for _, id := range requiredShapes {
+		shapeVariants := shapes[id]
+		area := shapeVariants[0].Area()
+		totalArea += area
+		itemsToPlace = append(itemsToPlace, item{id: id, area: area, variants: shapeVariants})
+	}
+
+	if totalArea > width*height {
+		return false
+	}
+
+	sort.Slice(itemsToPlace, func(i, j int) bool {
+		return itemsToPlace[i].area > itemsToPlace[j].area
+	})
+
+	grid := make([][]bool, height)
+
+	for i := range grid {
+		grid[i] = make([]bool, width)
+	}
+
+	return checkFit(0, itemsToPlace, grid, width, height)
+}
+
+func checkFit(index int, itemsToPlace []item, grid [][]bool, width int, height int) bool {
+	if index == len(itemsToPlace) {
+		return true
+	}
+
+	itemToPlace := itemsToPlace[index]
+
+	for _, variant := range itemToPlace.variants {
+		maxRow := variant.MaxRow()
+		maxColumn := variant.MaxColumn()
+
+		lastRow := height - maxRow
+		lastColumn := width - maxColumn
+
+		for r := range lastRow {
+			for c := range lastColumn {
+				if canPlace(grid, r, c, variant) {
+					place(grid, r, c, variant)
+
+					if checkFit(index+1, itemsToPlace, grid, width, height) {
+						return true
+					}
+
+					unplace(grid, r, c, variant)
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+func canPlace(grid [][]bool, r, c int, variant shape.Shape) bool {
+	for _, position := range variant.Positions() {
+		absoluteRow := r + position.Row()
+		absoluteColumn := c + position.Column()
+		isOccupied := grid[absoluteRow][absoluteColumn]
+
+		if isOccupied {
+			return false
+		}
+	}
+
+	return true
+}
+
+func place(grid [][]bool, r, c int, variant shape.Shape) {
+	for _, position := range variant.Positions() {
+		absoluteRow := r + position.Row()
+		absoluteColumn := c + position.Column()
+		grid[absoluteRow][absoluteColumn] = true
+	}
+}
+
+func unplace(grid [][]bool, r, c int, variant shape.Shape) {
+	for _, position := range variant.Positions() {
+		absoluteRow := r + position.Row()
+		absoluteColumn := c + position.Column()
+		grid[absoluteRow][absoluteColumn] = false
+	}
 }
