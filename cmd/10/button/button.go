@@ -19,7 +19,7 @@ func (b button) String() string {
 	return fmt.Sprintf("%v", b.switches)
 }
 
-func From(line string) button {
+func From(line string) Button {
 	buttonRegex := regexp.MustCompile(`\d+`)
 	matches := buttonRegex.FindAllString(line, -1)
 
