@@ -37,7 +37,7 @@ func TestSolvePartTwoWithExampleInput(t *testing.T) {
 }
 
 func TestSolvePartTwoWithInput(t *testing.T) {
-	expected := -1
+	expected := 19810
 
 	result := solution.SolvePartTwo("INPUT.txt")
 

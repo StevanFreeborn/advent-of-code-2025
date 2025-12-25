@@ -4,11 +4,12 @@ package machine
 import (
 	"math"
 	"regexp"
-	"slices"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/StevanFreeborn/advent-of-code-2025/cmd/10/button"
+	"github.com/StevanFreeborn/advent-of-code-2025/internal/stack"
 )
 
 type Machine interface {
@@ -66,263 +67,210 @@ func From(line string) Machine {
 }
 
 func (m machine) ConfigureLights() int {
-	combinations := [][]bool{}
+	combs := m.generateCombinations(len(m.desiredLightState))
+
 	minPresses := math.MaxInt
-	numberOfButtons := len(m.buttons)
-	numberOfCombinations := int(math.Pow(2, float64(numberOfButtons)))
-	currentCombination := make([]bool, numberOfButtons)
+	found := false
 
-	for range numberOfCombinations {
-		temp := make([]bool, numberOfButtons)
-		copy(temp, currentCombination)
+	for _, comb := range combs {
+		matches := true
 
-		combinations = append(combinations, temp)
+		for i, count := range comb.deltas {
+			isLightOn := count%2 != 0
 
-		for j := range numberOfButtons {
-			if currentCombination[j] == false {
-				currentCombination[j] = true
+			if isLightOn != m.desiredLightState[i] {
+				matches = false
 				break
-			} else {
-				currentCombination[j] = false
+			}
+		}
+
+		if matches {
+			if comb.numPresses < minPresses {
+				minPresses = comb.numPresses
+				found = true
 			}
 		}
 	}
 
-	for _, currentCombination := range combinations {
-		currentPresses := 0
-		initialLightState := make([]bool, len(m.desiredLightState))
-
-		for bi, bs := range currentCombination {
-			if bs == false {
-				continue
-			}
-
-			currentPresses++
-			switchesToToggle := m.buttons[bi].Switches()
-
-			for _, switchToToggle := range switchesToToggle {
-				initialLightState[switchToToggle] = !initialLightState[switchToToggle]
-			}
-		}
-
-		if slices.Equal(initialLightState, m.desiredLightState) == false {
-			continue
-		}
-
-		if currentPresses < minPresses {
-			minPresses = currentPresses
-		}
+	if found == false {
+		return 0
 	}
 
 	return minPresses
 }
 
+type combination struct {
+	deltas     []int
+	numPresses int
+}
+
+type searchState struct {
+	goal        []int
+	currentCost int
+	weight      int
+}
+
+// If a target is odd I must press a combination of
+// buttons that contributes an odd value to the target.
+// This means I can pre-compute what all combinations
+// of buttons do when pressed exactly once.
+// I then can look for a combination that matches the
+// odd/even pattern of the target
+// When I find a match I can subtract it from the target
+// and then divide the target by 2 to get a new target
+// I repeat this until I reach a target of all zeros
+
+// i.e. Goal: [13, 7]
+// Button A:  [1, 0]
+// Button B:  [1, 1]
+//
+// Combinations:
+// 0 presses:  [0, 0]
+// 1 press:    [1, 0] (A)
+// 1 press:    [1, 1] (B)
+// 1 press:    [2, 1] (A, B)
+//
+// 1st iteration:
+// Target: [13, 7] (odd, odd)
+// Match:  [1, 1] (B)
+// New Target: [(13-1)/2, (7-1)/2] = [6, 3]
+// Presses: 1 * weight 1 = 1
+//
+// Second iteration:
+// Target: [6, 3] (even, odd)
+// Match:  [2, 1] (A, B)
+// New Target: [(6-2)/2, (3-1)/2] = [2, 1]
+// Presses: 2 * weight 2 = 4
+//
+// Third iteration:
+// Target: [2, 1] (even, odd)
+// Match:  [2, 1] (A, B)
+// New Target: [(2-1)/2, (1-0)/2] = [0, 0]
+// Presses: 2 * weight 4 = 8
+//
+// Total presses: 1 + 4 + 8 = 13
 func (m machine) ConfigureJoltages() int {
-	matrix := m.createMatrix()
+	combinations := m.generateCombinations(len(m.desiredJoltages))
 
-	eliminated := performGaussianElimination(matrix)
-	pivots, freeVars := analyzeMatrix(eliminated)
+	sort.Slice(combinations, func(i, j int) bool {
+		return combinations[i].numPresses < combinations[j].numPresses
+	})
 
-	numVars := len(matrix[0]) - 1
-	values := make([]int, numVars)
-	bestSolution := Solution{sum: math.MaxInt}
+	stack := stack.New[searchState]()
+	stack.Push(searchState{
+		goal:        m.desiredJoltages,
+		currentCost: 0,
+		weight:      1,
+	})
 
-	iterativeSearch(freeVars, pivots, eliminated, values, &bestSolution)
+	minTotalCost := math.MaxInt
+	foundSolution := false
 
-	return bestSolution.sum
+	for stack.IsEmpty() == false {
+		curr, _ := stack.Pop()
+
+		if curr.currentCost >= minTotalCost {
+			continue
+		}
+
+		if isZero(curr.goal) {
+			if curr.currentCost < minTotalCost {
+				minTotalCost = curr.currentCost
+				foundSolution = true
+			}
+
+			continue
+		}
+
+		for _, combination := range combinations {
+			if smallerOrEqual(combination.deltas, curr.goal) == false {
+				continue
+			}
+
+			if hasSameParity(combination.deltas, curr.goal) == false {
+				continue
+			}
+
+			nextGoal := make([]int, len(curr.goal))
+
+			for i := 0; i < len(curr.goal); i++ {
+				nextGoal[i] = (curr.goal[i] - combination.deltas[i]) / 2
+			}
+
+			stepCost := combination.numPresses * curr.weight
+
+			stack.Push(searchState{
+				goal:        nextGoal,
+				currentCost: curr.currentCost + stepCost,
+				weight:      curr.weight * 2,
+			})
+		}
+	}
+
+	if foundSolution == false {
+		return 0
+	}
+
+	return minTotalCost
 }
 
-type Solution struct {
-	values []int
-	sum    int
-	found  bool
-}
+func (m machine) generateCombinations(size int) []combination {
+	res := []combination{{
+		deltas:     make([]int, size),
+		numPresses: 0,
+	}}
 
-func (m machine) createMatrix() [][]float64 {
-	rows := len(m.desiredJoltages)
-	cols := len(m.buttons)
-	matrix := make([][]float64, rows)
+	for _, btn := range m.buttons {
+		currentCount := len(res)
 
-	for r := range rows {
-		matrix[r] = make([]float64, cols+1)
+		for i := range currentCount {
+			existing := res[i]
 
-		for i, b := range m.buttons {
-			for _, sw := range b.Switches() {
-				if sw == r {
-					matrix[r][i] = 1
+			newDeltas := make([]int, size)
+			copy(newDeltas, existing.deltas)
+
+			for _, switchIdx := range btn.Switches() {
+				if switchIdx < size {
+					newDeltas[switchIdx]++
 				}
 			}
-		}
 
-		matrix[r][cols] = float64(m.desiredJoltages[r])
+			res = append(res, combination{
+				deltas:     newDeltas,
+				numPresses: existing.numPresses + 1,
+			})
+		}
 	}
 
-	return matrix
+	return res
 }
 
-func performGaussianElimination(m [][]float64) [][]float64 {
-	rows := len(m)
-	cols := len(m[0])
-	pivotColumn := 0
-
-	mCopy := make([][]float64, rows)
-
-	for i := range rows {
-		mCopy[i] = make([]float64, cols)
-		copy(mCopy[i], m[i])
+func isZero(arr []int) bool {
+	for _, v := range arr {
+		if v != 0 {
+			return false
+		}
 	}
 
-	for r1 := range rows {
-		if cols <= pivotColumn {
-			return mCopy
-		}
-
-		currentRow := r1
-
-		for mCopy[currentRow][pivotColumn] == 0 {
-			currentRow++
-
-			if rows == currentRow {
-				currentRow = r1
-				pivotColumn++
-
-				if cols == pivotColumn {
-					return mCopy
-				}
-			}
-		}
-
-		mCopy[currentRow], mCopy[r1] = mCopy[r1], mCopy[currentRow]
-
-		pivotValue := mCopy[r1][pivotColumn]
-
-		if pivotValue != 0 {
-			for j := range cols {
-				mCopy[r1][j] /= pivotValue
-			}
-		}
-
-		for r2 := range rows {
-			if r2 != r1 {
-				factor := mCopy[r2][pivotColumn]
-
-				for col := range cols {
-					mCopy[r2][col] -= factor * mCopy[r1][col]
-				}
-			}
-		}
-
-		pivotColumn++
-	}
-
-	return mCopy
+	return true
 }
 
-func analyzeMatrix(m [][]float64) (map[int]int, []int) {
-	pivots := make(map[int]int)
-
-	cols := len(m[0])
-	numVars := cols - 1
-
-	isFree := make([]bool, numVars)
-
-	for i := range isFree {
-		isFree[i] = true
-	}
-
-	rows := len(m)
-
-	for r := range rows {
-		for c := 0; c < cols-1; c++ {
-			if math.Abs(m[r][c]-1.0) < 1e-9 {
-				pivots[c] = r
-				isFree[c] = false
-				break
-			}
+func smallerOrEqual(a []int, b []int) bool {
+	for i := range a {
+		if a[i] > b[i] {
+			return false
 		}
 	}
 
-	freeVars := []int{}
-
-	for i, free := range isFree {
-		if free {
-			freeVars = append(freeVars, i)
-		}
-	}
-
-	return pivots, freeVars
+	return true
 }
 
-func iterativeSearch(freeVars []int, pivots map[int]int, matrix [][]float64, values []int, best *Solution) {
-	if len(freeVars) == 0 {
-		evaluateSolution(pivots, matrix, values, best)
-		return
-	}
-
-	counters := make([]int, len(freeVars))
-	limit := 250
-
-	for {
-		for i, counterVal := range counters {
-			values[freeVars[i]] = counterVal
-		}
-
-		evaluateSolution(pivots, matrix, values, best)
-
-		idx := len(counters) - 1
-
-		for idx >= 0 {
-			counters[idx]++
-
-			if counters[idx] > limit {
-				counters[idx] = 0
-				idx--
-			} else {
-				break
-			}
-		}
-
-		if idx < 0 {
-			break
+func hasSameParity(a []int, b []int) bool {
+	for i := range a {
+		if a[i]%2 != b[i]%2 {
+			return false
 		}
 	}
-}
 
-func evaluateSolution(pivots map[int]int, m [][]float64, values []int, best *Solution) {
-	isValid := true
-	currentSum := 0
-	cols := len(m[0])
-
-	for col, row := range pivots {
-		sum := m[row][cols-1]
-
-		for c := 0; c < cols-1; c++ {
-			if c != col {
-				coeff := m[row][c]
-				sum -= coeff * float64(values[c])
-			}
-		}
-
-		values[col] = int(math.Round(sum))
-	}
-
-	for _, v := range values {
-		if v < 0 {
-			isValid = false
-			break
-		}
-
-		currentSum += v
-	}
-
-	if isValid {
-		if currentSum < best.sum {
-			best.sum = currentSum
-
-			best.values = make([]int, len(values))
-			copy(best.values, values)
-
-			best.found = true
-		}
-	}
+	return true
 }
